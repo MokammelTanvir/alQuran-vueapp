@@ -7,7 +7,7 @@
   <div class="basis-6/12 ml-5">
   <img class="h-14 w-14"  src="./assets/quran-2.png" alt="">    
   </div>
-  <h2 class="basis-6/12 text-4xl font-bold">AL QURAN - القرأن</h2>
+  <h2 class="basis-6/12 text-2xl lg:text-4xl font-bold">AL QURAN - القرأن</h2>
   
   </div>
 
