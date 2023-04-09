@@ -1,3 +1,14 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.container{
+  max-width: 800px;
+  @apply mx-auto;
+}
+.quran-input{
+  @apply border border-gray-200 rounded w-full px-4 py-2;
+}
+.quran-btn{
+  @apply border bg-blue-500 text-white px-4 py-2 rounded-full w-full;
+}
