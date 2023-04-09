@@ -1,6 +1,6 @@
 # alQuran-vueapp
 
-This template should help get you started developing with Vue 3 in Vite.
+The Al-Quran webapp create with Vuejs using quran-api.
 
 ## Recommended IDE Setup
 
@@ -27,3 +27,12 @@ npm run dev
 ```sh
 npm run build
 ```
+
+## Authors
+
+- [@mokammeltanvir](https://www.github.com/mokammeltanvir)
+
+
+## Screenshots
+
+![App Screenshot](https://raw.githubusercontent.com/mokammeltanvir/alQuran-vueapp/445925300bd739478be1d2f06e2e01943c2110a6/Screenshot.png)
