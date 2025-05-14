@@ -42,8 +42,11 @@ The Al-Quran application can be installed as a Progressive Web App on your devic
 
 ## 📷 Screenshots
 
-### Version 2.0
+### Version 2.0 with Dark Mode
 ![App Screenshot v2](https://raw.githubusercontent.com/mokammeltanvir/alQuran-vueapp/main/shenshootv2.png)
+
+### Reading Mode
+![Reading Mode](https://raw.githubusercontent.com/mokammeltanvir/alQuran-vueapp/main/screenshot2.png)
 
 ### Version 1.0
 ![App Screenshot v1](https://raw.githubusercontent.com/mokammeltanvir/alQuran-vueapp/main/Screenshot.png)
