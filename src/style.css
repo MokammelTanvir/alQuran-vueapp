@@ -1,14 +1,50 @@
+/* Import Arabic fonts */
+@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Scheherazade+New:wght@400;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-.container{
-  max-width: 800px;
-  @apply mx-auto;
+/* Base styles */
+body {
+  @apply antialiased text-gray-800 dark:text-gray-200 transition-colors duration-200;
 }
-.quran-input{
-  @apply border border-gray-200 rounded w-full px-4 py-2;
+
+.container {
+  max-width: 1200px;
+  @apply mx-auto px-4;
 }
-.quran-btn{
-  @apply border bg-blue-500 text-white px-4 py-2 rounded-full w-full;
+
+/* Form Elements */
+.quran-input {
+  @apply border border-gray-300 dark:border-gray-600 rounded-md w-full px-4 py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200;
+}
+
+.quran-btn {
+  @apply border bg-blue-600 text-white px-4 py-2 rounded-md w-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-200 shadow-sm;
+}
+
+/* Dark mode transitions */
+.dark .bg-white {
+  @apply transition-colors duration-200;
+}
+
+/* Animated elements */
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  transform: translateY(20px);
+  opacity: 0;
+}
+
+/* Arabic text specific styles */
+.font-arabic {
+  font-family: "Amiri", "Scheherazade New", serif;
+  line-height: 2;
+  direction: rtl;
 }

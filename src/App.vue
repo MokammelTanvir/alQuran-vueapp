@@ -1,54 +1,368 @@
-
 <template>
   <div class="min-h-screen bg-gray-100">
-  
-  <div class="container my-6">
-  <div class="flex items-center mb-3 bg-blue-200 shadow rounded py-5">
-  <div class="basis-6/12 ml-5">
-  <img class="h-14 w-14"  src="./assets/quran-2.png" alt="">    
-  </div>
-  <h2 class="basis-6/12 text-2xl lg:text-4xl font-bold">AL QURAN - القرأن</h2>
-  
-  </div>
+    <header class="bg-blue-600 text-white shadow-md">
+      <div class="container mx-auto py-4 px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col sm:flex-row items-center justify-between">
+          <div class="flex items-center mb-3 sm:mb-0">
+            <img class="h-12 w-12 mr-3" src="./assets/quran-2.png" alt="Quran Logo">
+            <h1 class="text-2xl md:text-3xl lg:text-4xl font-bold">AL QURAN - القرأن</h1>
+          </div>
+          <div class="flex items-center mt-2 sm:mt-0">
+            <button @click="toggleTheme" class="p-2 rounded-full hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-white">
+              <svg v-if="darkMode" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+              <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
 
-  
+    <main class="container mx-auto my-6 px-4 sm:px-6 lg:px-8">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+        <!-- Surah Selection and Info -->
+        <div class="p-4 md:p-6">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0 md:space-x-4">
+            <div class="w-full md:w-1/3">
+              <div class="relative">
+                <select 
+                  id="surah-select"
+                  @change="getSpecificSurah" 
+                  class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                >
+                  <option value="">Select Surah</option>
+                  <option v-for="surah in surahs" :key="surah.number" :value="surah.number">
+                    {{ surah.number }}. {{ surah.englishName }} - {{ surah.name }}
+                  </option>
+                </select>
+                <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                  <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                  </svg>
+                </div>
+              </div>
+            </div>
 
-  <div class="bg-white p-4 shadow rounded">
-  <div class="flex -mx-4 items-center mb-6">
-  <div class="flex-1 px-4">
-  <select  @change="getSpecificSurah" class="quran-input" name="" >
-  <option value="">Select Surah</option>
-  <option v-for="surah in surahs" :value="surah.number">
-  {{ surah.englishName }} - {{ surah.name }}
-  </option>
-  </select>
-  </div>
-  <div class="flex-1 px-4 text-center">
-  <h3 class="font-bold mb-1 text-lg">{{ currentSurah.name }} - {{ currentSurah.englishName }}</h3>
-  
-  <p>{{ currentSurah.englishNameTranslation }} | {{ currentSurah.revelationType }} | Ayah: {{ currentSurah.numberOfAyahs }}</p>
-  </div>
-  <div class="flex-1 px-4">
-  <button class="quran-btn">Play</button>
+            <div class="w-full md:w-1/3 text-center">
+              <h3 class="text-lg md:text-xl font-bold text-gray-800 dark:text-white">
+                <span v-if="currentSurah.name">{{ currentSurah.name }} - {{ currentSurah.englishName }}</span>
+                <span v-else>Select a Surah</span>
+              </h3>
+              <p v-if="currentSurah.englishNameTranslation" class="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                {{ currentSurah.englishNameTranslation }} | {{ currentSurah.revelationType }} | Ayahs: {{ currentSurah.numberOfAyahs }}
+              </p>
+            </div>
 
-  </div>
+            <div class="w-full md:w-1/3 flex justify-center md:justify-end space-x-3">
+              <button 
+                @click="playAudio" 
+                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                :disabled="audioLoading"
+              >
+                <svg v-if="audioLoading" class="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <svg v-else-if="audioPlaying" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ audioLoading ? 'Loading...' : (audioPlaying ? 'Pause' : 'Play') }}
+              </button>
+              <button @click="downloadSurah" class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Download
+              </button>
+            </div>
+          </div>
+
+          <!-- Audio Player -->
+          <div v-if="audioSrc" class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div class="flex flex-col space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-gray-500 dark:text-gray-400">{{ formatTime(currentTime) }}</span>
+                <div class="flex-1 mx-4 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                  <div 
+                    class="h-full bg-blue-500 rounded-full relative"
+                    :style="{ width: `${audioProgress}%` }"
+                    @click="seekAudio"
+                    ref="progressBar"
+                  ></div>
+                </div>
+                <span class="text-sm text-gray-500 dark:text-gray-400">{{ formatTime(duration) }}</span>
+              </div>
+              <div class="flex justify-center space-x-4">
+                <button @click="seekBackward" class="p-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0019 16V8a1 1 0 00-1.6-.8l-5.333 4z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8v8" />
+                  </svg>
+                </button>
+                <button @click="playAudio" class="p-2 rounded-full bg-blue-600 text-white hover:bg-blue-700">
+                  <svg v-if="audioPlaying" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </button>
+                <button @click="seekForward" class="p-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0011 16V8a1 1 0 00-1.6-.8L4.318 11.2z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 8v8" />
+                  </svg>
+                </button>
+              </div>
+              <div class="flex justify-center space-x-4">
+                <select @change="changeReciter" v-model="currentReciter" class="text-sm text-gray-700 dark:text-gray-200 bg-transparent border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                  <option v-for="reciter in reciters" :key="reciter.identifier" :value="reciter.identifier">
+                    {{ reciter.name }}
+                  </option>
+                </select>
+                <button @click="toggleRepeat" class="p-1 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400" :class="{ 'text-blue-600 dark:text-blue-400': repeat }">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="border-t border-gray-200 dark:border-gray-700"></div>
+
+        <!-- Content Area -->
+        <div class="p-4 md:p-6">
+          <!-- Loading State -->
+          <div v-if="loading" class="flex flex-col items-center justify-center py-12">
+            <svg class="animate-spin h-10 w-10 text-blue-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p class="text-gray-600 dark:text-gray-300 mb-4">Loading Surah...</p>
+            
+            <div v-if="loadingError" class="mt-4 text-center">
+              <p class="text-red-500 mb-3">Failed to load Surah data</p>
+              <button 
+                @click="retryLoading" 
+                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Retry
+              </button>
+            </div>
+          </div>
+
+          <!-- Ayahs Content -->
+          <div v-else>
+            <div v-if="!currentSurah.ayahs || currentSurah.ayahs.length === 0" class="text-center py-12">
+              <p class="text-gray-600 dark:text-gray-300">Please select a Surah to view its content</p>
+            </div>
+            <div v-else class="space-y-6">
+              <!-- Bismillah header except for Surah 9 -->
+              <div v-if="currentSurah.number !== 9" class="text-center my-6">
+                <p class="text-2xl lg:text-3xl font-arabic text-gray-800 dark:text-white">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</p>
+              </div>
+              
+              <div class="grid gap-6">
+                <div 
+                  v-for="ayah in currentSurah.ayahs" 
+                  :key="ayah.number"
+                  :data-ayah-number="ayah.numberInSurah"
+                  class="group p-4 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                >
+                  <div class="flex items-start md:items-center">
+                    <div class="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 rounded-full mr-4">
+                      {{ ayah.numberInSurah }}
+                    </div>
+                    <div class="flex-1">
+                      <p class="text-xl md:text-2xl lg:text-3xl font-arabic text-right leading-loose text-gray-800 dark:text-white mb-3">
+                        {{ ayah.text }}
+                      </p>
+                      <p v-if="showTranslation" class="mt-2 text-gray-600 dark:text-gray-300 text-sm md:text-base">
+                        <span v-if="getTranslationLoadingState(ayah)">
+                          <svg class="animate-spin inline-block h-4 w-4 mr-2 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          {{ translationLanguage === 'en' ? 'Loading translation...' : 'অনুবাদ লোড হচ্ছে...' }}
+                        </span>
+                        <span v-else>{{ getTranslation(ayah) }}</span>
+                      </p>
+                    </div>
+                  </div>
+                  <div class="mt-3 pt-2 border-t border-gray-100 dark:border-gray-700 flex justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button @click="copyAyah(ayah.text)" class="text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-300 p-1" title="Copy Ayah">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                      </svg>
+                    </button>
+                    <button 
+                      @click="toggleBookmark(ayah)" 
+                      class="text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-300 p-1 ml-2" 
+                      :class="{ 'text-blue-500 dark:text-blue-300': isBookmarked(ayah) }"
+                      title="Bookmark"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" :fill="isBookmarked(ayah) ? 'currentColor' : 'none'" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="bg-white dark:bg-gray-800 shadow-inner mt-8">
+      <div class="container mx-auto py-4 px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col md:flex-row items-center justify-between">
+          <p class="text-gray-600 dark:text-gray-300 text-sm">
+            Data provided by <a href="https://alquran.cloud/" class="text-blue-600 dark:text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer">Al Quran Cloud</a>
+          </p>
+          <div class="flex mt-3 md:mt-0">
+            <button @click="toggleTranslation" class="text-sm bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800 px-3 py-1 rounded-md flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+              </svg>
+              {{ showTranslation ? 'Hide Translation' : 'Show Translation' }}
+            </button>
+            <div class="relative ml-4 language-menu">
+              <button @click="toggleLanguageMenu" class="text-sm text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 px-2 py-1 rounded flex items-center">
+                {{ translationLanguage === 'en' ? 'English' : 'বাংলা' }}
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                </svg>
+              </button>
+              <div v-if="showLanguageMenu" class="absolute bottom-full mb-2 right-0 w-40 bg-white dark:bg-gray-700 rounded-md shadow-lg z-10">
+                <div class="py-1">
+                  <button 
+                    @click="setLanguage('en')" 
+                    class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600"
+                    :class="{'bg-gray-100 dark:bg-gray-600': translationLanguage === 'en'}"
+                  >
+                    English
+                  </button>
+                  <button 
+                    @click="setLanguage('bn')" 
+                    class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600"
+                    :class="{'bg-gray-100 dark:bg-gray-600': translationLanguage === 'bn'}"
+                  >
+                    বাংলা
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="relative ml-4 bookmarks-menu">
+              <button @click="toggleBookmarksMenu" class="text-sm text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 px-2 py-1 rounded flex items-center">
+                Bookmarks
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                </svg>
+                <span v-if="bookmarkedAyahs.length > 0" class="ml-1 bg-blue-500 text-white text-xs rounded-full px-1.5 py-0.5">{{ bookmarkedAyahs.length }}</span>
+              </button>
+              <div v-if="showBookmarksMenu" class="absolute bottom-full mb-2 right-0 w-72 max-h-96 overflow-y-auto bg-white dark:bg-gray-700 rounded-md shadow-lg z-10">
+                <div class="p-3">
+                  <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">Saved Ayahs</h3>
+                  <div v-if="bookmarkedAyahs.length === 0" class="text-sm text-gray-500 dark:text-gray-400 py-2">
+                    No bookmarks saved yet
+                  </div>
+                  <div v-else class="space-y-2">
+                    <div 
+                      v-for="bookmark in sortedBookmarks" 
+                      :key="`${bookmark.surahNumber}-${bookmark.ayahNumber}`"
+                      class="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600 text-sm text-gray-800 dark:text-gray-200 border-b border-gray-200 dark:border-gray-600 last:border-0"
+                    >
+                      <div class="flex justify-between mb-1">
+                        <div class="font-medium">{{ bookmark.surahName }} ({{ bookmark.surahNumber }}:{{ bookmark.ayahNumber }})</div>
+                        <button 
+                          @click.stop="removeBookmark(bookmark)"
+                          class="text-gray-400 hover:text-red-500"
+                          title="Remove bookmark"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                      <div class="text-xs font-arabic text-right mb-1 truncate">
+                        {{ bookmark.ayahText }}
+                      </div>
+                      <div class="flex justify-end">
+                        <button 
+                          @click="goToBookmarkedAyah(bookmark)"
+                          class="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                        >
+                          Go to ayah
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <button class="text-sm text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 px-2 py-1 rounded ml-4">
+              Settings
+            </button>
+          </div>
+        </div>
+        <div class="text-center mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            Developed with <span class="text-red-500">❤</span> by 
+            <a href="https://github.com/mokammeltanvir" class="text-blue-600 dark:text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer">Mokammel Tanvir</a>
+          </p>
+        </div>
+      </div>
+    </footer>
+    
+    <!-- Toast Notification -->
+    <div 
+      v-if="showToast" 
+      class="fixed bottom-4 right-4 px-4 py-2 rounded-md shadow-lg flex items-center transition-all duration-300 ease-in-out"
+      :class="[
+        toastType === 'success' ? 'bg-green-500 text-white' : '',
+        toastType === 'error' ? 'bg-red-500 text-white' : '',
+        toastType === 'info' ? 'bg-blue-500 text-white' : ''
+      ]"
+      style="z-index: 9999;"
+    >
+      <div v-if="toastType === 'success'" class="mr-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+        </svg>
+      </div>
+      <div v-if="toastType === 'error'" class="mr-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293-1.293a1 1 0 00-1.414-1.414L10 10l-1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+        </svg>
+      </div>
+      <div v-if="toastType === 'info'" class="mr-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9a1 1 0 00-1-1z" clip-rule="evenodd" />
+        </svg>
+      </div>
+      <p>{{ toastMessage }}</p>
+      <button @click="hideToast" class="ml-4 text-sm opacity-70 hover:opacity-100">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
     </div>
-    <div v-if="loading" class="flex">
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-  <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-</svg>
-Loding...
-</div>
-
-    <div v-else class="text-4xl transition">
-    <p class="mb-5 transition duration-300" v-if="currentSurah.hasOwnProperty('ayahs')" v-for="ayah in currentSurah.ayahs">
-    <span class="text-xs inline-block w-5 h-5 border rounded-full text-center mr-4">{{ ayah.numberInSurah }}</span> {{ ayah.text }}</p>
-    </div>
   </div>
-
-  </div>
-</div>
 </template>
 
 <script>
@@ -60,32 +374,1060 @@ export default {
     return {
       surahs: [],
       currentSurah: [],
-      loading: true
-  }
-},
+      loading: true,
+      loadingError: false,
+      darkMode: false,
+      showTranslation: false,
+      translationLanguage: 'en',
+      showLanguageMenu: false,
+      translations: {
+        en: {},
+        bn: {}
+      },
+      translationsLoading: {
+        en: {},
+        bn: {}
+      },
+      translationRetryCount: {
+        en: {},
+        bn: {}
+      },
+      // Add bookmarks array to store bookmarked ayahs
+      bookmarkedAyahs: [],
+      // Audio related variables
+      audioPlayer: null,
+      audioSrc: null,
+      audioPlaying: false,
+      audioLoading: false,
+      currentTime: 0,
+      duration: 0,
+      audioProgress: 0,
+      currentReciter: 'mishaari_raashid_al_3afaasee',
+      reciters: [
+        { name: 'Mishari Rashid al-Afasy', identifier: 'mishaari_raashid_al_3afaasee' },
+        { name: 'Abdul Basit Abdul Samad', identifier: 'abdul_basit_murattal' },
+        { name: 'Abu Bakr al-Shatri', identifier: 'abu_bakr_ash-shaatree' },
+        { name: 'Hani ar-Rifai', identifier: 'hani_ar_rifai' },
+        { name: 'Mohamed Siddiq al-Minshawi', identifier: 'minshawi_murattal' }
+      ],
+      repeat: false,
+      // Toast notification
+      showToast: false,
+      toastMessage: '',
+      toastType: 'success',
+      toastTimeout: null,
+      showBookmarksMenu: false
+    }
+  },
   mounted() {
-    axios.get('https://api.alquran.cloud/v1/surah')
-    .then(response => {
-      this.surahs = response.data.data
-    })
+    // Check for saved preferences
+    this.loadUserPreferences();
     
+    // Load initial data
+    this.loadAllSurahs();
     this.querySpecificSurah(1);
-
+    
+    // Add dark mode listener
+    this.setupDarkModeListener();
+    
+    // Load saved bookmarks from localStorage
+    this.loadBookmarks();
+    
+    // Add debug menu to help troubleshoot translation issues
+    window.debugQuranApp = {
+      showTranslations: () => {
+        console.log('Current translation state:', {
+          showTranslation: this.showTranslation,
+          language: this.translationLanguage,
+          englishTranslations: this.translations.en,
+          banglaTranslations: this.translations.bn
+        });
+      },
+      forceEnglishTranslation: () => {
+        this.translationLanguage = 'en';
+        this.showTranslation = true;
+        this.loadEnglishTranslation(this.currentSurah.number);
+      },
+      forceBanglaTranslation: () => {
+        this.translationLanguage = 'bn';
+        this.showTranslation = true;
+        this.loadBanglaTranslation(this.currentSurah.number);
+      }
+    };
   },
   methods: {
+    loadUserPreferences() {
+      // Load dark mode preference
+      const savedDarkMode = localStorage.getItem('darkMode');
+      if (savedDarkMode !== null) {
+        this.darkMode = JSON.parse(savedDarkMode);
+        this.applyDarkMode();
+      } else {
+        // Check system preference
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        this.darkMode = prefersDark;
+        this.applyDarkMode();
+      }
+      
+      // Load translation preference
+      const savedTranslation = localStorage.getItem('showTranslation');
+      if (savedTranslation !== null) {
+        this.showTranslation = JSON.parse(savedTranslation);
+      }
+      
+      // Load language preference
+      const savedLanguage = localStorage.getItem('translationLanguage');
+      if (savedLanguage !== null) {
+        this.translationLanguage = savedLanguage;
+      }
+    },
+    
+    setupDarkModeListener() {
+      // Listen for system dark mode changes
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+        if (localStorage.getItem('darkMode') === null) {
+          this.darkMode = e.matches;
+          this.applyDarkMode();
+        }
+      });
+    },
+    
+    toggleTheme() {
+      this.darkMode = !this.darkMode;
+      localStorage.setItem('darkMode', JSON.stringify(this.darkMode));
+      this.applyDarkMode();
+    },
+    
+    applyDarkMode() {
+      if (this.darkMode) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    },
+    
+    toggleTranslation() {
+      this.showTranslation = !this.showTranslation;
+      localStorage.setItem('showTranslation', JSON.stringify(this.showTranslation));
+      
+      this.showToastMessage(
+        this.showTranslation ? 
+          (this.translationLanguage === 'en' ? 'Showing English translation' : 'বাংলা অনুবাদ দেখানো হচ্ছে') : 
+          'Translation hidden', 
+        'info'
+      );
+      
+      // Load translations if not already loaded and if showing translations
+      if (this.showTranslation && this.currentSurah.number) {
+        // Force reload translations
+        if (this.translationLanguage === 'en') {
+          this.loadEnglishTranslation(this.currentSurah.number);
+        } else if (this.translationLanguage === 'bn') {
+          this.loadBanglaTranslation(this.currentSurah.number);
+        }
+      }
+    },
+    
+    toggleLanguageMenu() {
+      this.showLanguageMenu = !this.showLanguageMenu;
+      
+      // Close menu when clicking outside
+      if (this.showLanguageMenu) {
+        setTimeout(() => {
+          document.addEventListener('click', this.closeLanguageMenu);
+        }, 0);
+      }
+    },
+    
+    closeLanguageMenu(e) {
+      if (!e.target.closest('.language-menu')) {
+        this.showLanguageMenu = false;
+        document.removeEventListener('click', this.closeLanguageMenu);
+      }
+    },
+    
+    setLanguage(lang) {
+      this.translationLanguage = lang;
+      localStorage.setItem('translationLanguage', lang);
+      this.showLanguageMenu = false;
+      
+      this.showToastMessage(
+        lang === 'en' ? 'Switched to English translation' : 'বাংলা অনুবাদে স্যুইচ করা হয়েছে', 
+        'info'
+      );
+      
+      // Always reload translations when language changes
+      if (this.showTranslation && this.currentSurah.number) {
+        if (lang === 'en') {
+          this.loadEnglishTranslation(this.currentSurah.number);
+        } else {
+          this.loadBanglaTranslation(this.currentSurah.number);
+        }
+      }
+    },
+    
+    getTranslationLoadingState(ayah) {
+      const surahNum = this.currentSurah.number;
+      const lang = this.translationLanguage;
+      
+      // Make sure objects exist
+      if (!this.translations[lang]) this.translations[lang] = {};
+      if (!this.translationsLoading[lang]) this.translationsLoading[lang] = {};
+      
+      // If we already have this translation, it's not loading
+      if (this.translations[lang][surahNum] && 
+          this.translations[lang][surahNum][ayah.numberInSurah]) {
+        return false;
+      }
+      
+      // Check if this surah's translations are currently loading
+      return this.translationsLoading[lang][surahNum] === true;
+    },
+    
+    getTranslation(ayah) {
+      const surahNum = this.currentSurah.number;
+      const ayahNum = ayah.numberInSurah;
+      const lang = this.translationLanguage;
+      
+      // Make sure objects exist
+      if (!this.translations[lang]) this.translations[lang] = {};
+      if (!this.translationsLoading[lang]) this.translationsLoading[lang] = {};
+      
+      // If translation is available, return it
+      if (this.translations[lang][surahNum] && 
+          this.translations[lang][surahNum][ayahNum]) {
+        return this.translations[lang][surahNum][ayahNum];
+      }
+      
+      // If translation is not loading, try to load it
+      if (!this.translationsLoading[lang][surahNum]) {
+        // Start loading translations if not already in progress
+        this.loadTranslations(surahNum);
+      }
+      
+      // Return a default message while loading
+      return lang === 'en' 
+        ? `Translation not available for Ayah ${ayahNum}` 
+        : `আয়াত ${ayahNum} এর জন্য অনুবাদ উপলব্ধ নয়`;
+    },
+    
+    loadTranslations(surahNumber) {
+      const lang = this.translationLanguage;
+      
+      // Initialize objects if they don't exist
+      if (!this.translationsLoading[lang]) this.translationsLoading[lang] = {};
+      if (!this.translationRetryCount[lang]) this.translationRetryCount[lang] = {};
+      if (!this.translations[lang]) this.translations[lang] = {};
+      
+      // Set loading state
+      this.translationsLoading[lang][surahNumber] = true;
+      
+      // Initialize retry count if not exists
+      if (!this.translationRetryCount[lang][surahNumber]) {
+        this.translationRetryCount[lang][surahNumber] = 0;
+      }
+      
+      if (lang === 'en') {
+        this.loadEnglishTranslation(surahNumber);
+      } else if (lang === 'bn') {
+        this.loadBanglaTranslation(surahNumber);
+      }
+    },
+    
+    loadEnglishTranslation(surahNumber) {
+      console.log('Loading English translation for surah:', surahNumber);
+      
+      // Set loading state
+      this.translationsLoading.en[surahNumber] = true;
+      
+      // Increment retry count
+      const currentRetryCount = this.translationRetryCount.en[surahNumber] || 0;
+      this.translationRetryCount.en[surahNumber] = currentRetryCount + 1;
+      
+      // If we've tried too many times, use placeholder translations
+      if (currentRetryCount >= 2) {
+        this.createPlaceholderTranslations('en', surahNumber);
+        return;
+      }
+      
+      // Try primary API - alquran.cloud
+      axios.get(`https://api.alquran.cloud/v1/surah/${surahNumber}/en.sahih`)
+        .then(response => {
+          if (response.data && response.data.data && response.data.data.ayahs) {
+            const translationData = {};
+            response.data.data.ayahs.forEach(ayah => {
+              translationData[ayah.numberInSurah] = ayah.text;
+            });
+            
+            // Set translations and update loading state
+            this.translations.en[surahNumber] = translationData;
+            this.translationsLoading.en[surahNumber] = false;
+            
+            console.log('English translation loaded successfully');
+          } else {
+            throw new Error('Unexpected API response format');
+          }
+        })
+        .catch(error => {
+          console.error('Error loading English translation from primary source:', error);
+          
+          // Try alternative API
+          this.loadEnglishTranslationFallback(surahNumber);
+        });
+    },
+    
+    loadEnglishTranslationFallback(surahNumber) {
+      console.log('Trying alternative English translation source');
+      
+      // Alternative source - Quran.com API
+      axios.get(`https://api.quran.com/api/v4/quran/translations/20?chapter_number=${surahNumber}`)
+        .then(response => {
+          const translationData = {};
+          
+          if (response.data && response.data.translations) {
+            response.data.translations.forEach(ayah => {
+              // Quran.com API uses different indexing, verse_key is like "1:1"
+              const verseParts = ayah.verse_key.split(':');
+              const ayahNumber = parseInt(verseParts[1]);
+              translationData[ayahNumber] = ayah.text;
+            });
+            
+            // Set translations and update loading state
+            this.translations.en[surahNumber] = translationData;
+            this.translationsLoading.en[surahNumber] = false;
+            
+            console.log('English translation loaded from fallback source');
+          } else {
+            throw new Error('Unexpected response format');
+          }
+        })
+        .catch(error => {
+          console.error('Error loading English translation from fallback source:', error);
+          
+          // Create placeholder translations
+          this.createPlaceholderTranslations('en', surahNumber);
+        });
+    },
+    
+    loadBanglaTranslation(surahNumber) {
+      console.log('Loading Bangla translation for surah:', surahNumber);
+      
+      // Set loading state
+      this.translationsLoading.bn[surahNumber] = true;
+      
+      // Increment retry count
+      const currentRetryCount = this.translationRetryCount.bn[surahNumber] || 0;
+      this.translationRetryCount.bn[surahNumber] = currentRetryCount + 1;
+      
+      // If we've tried too many times, use placeholder translations
+      if (currentRetryCount >= 2) {
+        this.createPlaceholderTranslations('bn', surahNumber);
+        return;
+      }
+      
+      // Try a reliable API first
+      axios.get(`https://api.alquran.cloud/v1/surah/${surahNumber}/bn.bengali`)
+        .then(response => {
+          if (response.data && response.data.data && response.data.data.ayahs) {
+            const translationData = {};
+            response.data.data.ayahs.forEach(ayah => {
+              translationData[ayah.numberInSurah] = ayah.text;
+            });
+            
+            // Set translations and update loading state
+            this.translations.bn[surahNumber] = translationData;
+            this.translationsLoading.bn[surahNumber] = false;
+            
+            console.log('Bangla translation loaded successfully');
+          } else {
+            throw new Error('Unexpected API response format');
+          }
+        })
+        .catch(error => {
+          console.error('Error loading Bangla translation from primary source:', error);
+          
+          // Try alternative source
+          this.loadBanglaTranslationFallback(surahNumber);
+        });
+    },
+    
+    loadBanglaTranslationFallback(surahNumber) {
+      console.log('Trying alternative Bangla translation source');
+      
+      // Alternative source for Bengali translation
+      axios.get(`https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/editions/ben-muhiuddinkhan/${surahNumber}.json`)
+        .then(response => {
+          const translationData = {};
+          
+          if (response.data && response.data.verses) {
+            response.data.verses.forEach(ayah => {
+              translationData[ayah.verse] = ayah.text;
+            });
+            
+            // Set translations and update loading state
+            this.translations.bn[surahNumber] = translationData;
+            this.translationsLoading.bn[surahNumber] = false;
+            
+            console.log('Bangla translation loaded from fallback source');
+          } else {
+            throw new Error('Unexpected response format');
+          }
+        })
+        .catch(error => {
+          console.error('Error loading Bangla translation from fallback source:', error);
+          
+          // Create placeholder translations
+          this.createPlaceholderTranslations('bn', surahNumber);
+        });
+    },
+    
+    createPlaceholderTranslations(language, surahNumber) {
+      console.log(`Creating placeholder translations for ${language}, surah ${surahNumber}`);
+      
+      const placeholderData = {};
+      const message = language === 'en' 
+        ? "Translation could not be loaded. Please try again later." 
+        : "অনুবাদ লোড করা যায়নি। দয়া করে পরে আবার চেষ্টা করুন।";
+      
+      // Create placeholder for each ayah
+      if (this.currentSurah.ayahs) {
+        this.currentSurah.ayahs.forEach(ayah => {
+          placeholderData[ayah.numberInSurah] = message;
+        });
+      }
+      
+      // Set placeholder translations
+      this.translations[language][surahNumber] = placeholderData;
+      
+      // Mark loading as complete
+      this.translationsLoading[language][surahNumber] = false;
+      
+      // Show a toast message
+      this.showToastMessage(
+        language === 'en' 
+          ? "Could not load translations. Check your internet connection." 
+          : "অনুবাদ লোড করা যায়নি। আপনার ইন্টারনেট সংযোগ পরীক্ষা করুন।", 
+        'error'
+      );
+    },
+    
+    loadAllSurahs() {
+      // Try primary API
+      axios.get('https://api.alquran.cloud/v1/surah')
+        .then(response => {
+          this.surahs = response.data.data;
+        })
+        .catch(primaryError => {
+          console.error('Error loading surahs from primary source:', primaryError);
+          
+          // Try fallback API
+          axios.get('https://api.quran.com/api/v4/chapters')
+            .then(response => {
+              if (response.data && response.data.chapters) {
+                // Convert the data format to match the expected format
+                this.surahs = response.data.chapters.map(chapter => ({
+                  number: chapter.id,
+                  name: chapter.name_arabic,
+                  englishName: chapter.name_simple,
+                  englishNameTranslation: chapter.translated_name?.name || '',
+                  numberOfAyahs: chapter.verses_count,
+                  revelationType: chapter.revelation_place
+                }));
+              } else {
+                throw new Error('Unexpected data format from fallback API');
+              }
+            })
+            .catch(secondaryError => {
+              console.error('Error loading surahs from fallback source:', secondaryError);
+              
+              // If both sources fail, try a third source (static JSON file)
+              axios.get('https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/info.json')
+                .then(response => {
+                  if (response.data && response.data.chapters) {
+                    // Convert the data format
+                    this.surahs = Object.entries(response.data.chapters).map(([number, chapter]) => ({
+                      number: parseInt(number),
+                      name: chapter.arabicName || `سورة ${number}`,
+                      englishName: chapter.name || `Surah ${number}`,
+                      englishNameTranslation: chapter.translation || '',
+                      numberOfAyahs: chapter.totalVerses || 0,
+                      revelationType: chapter.revelationType || 'Unknown'
+                    }));
+                  } else {
+                    throw new Error('Unexpected data format from third source');
+                  }
+                })
+                .catch(thirdError => {
+                  console.error('All sources failed for surah list:', thirdError);
+                  this.showToastMessage('Failed to load Surah list. Please check your internet connection and try again later.', 'error');
+                });
+            });
+        });
+    },
+    
     getSpecificSurah(e) {
-      this.querySpecificSurah(e.target.value);
-  },
+      const surahNumber = e.target.value;
+      if (surahNumber) {
+        this.querySpecificSurah(surahNumber);
+        
+        // If audio was playing, auto-play the new surah
+        if (this.audioPlaying) {
+          setTimeout(() => {
+            this.playAudio();
+          }, 1000); // Wait a bit for the surah data to load
+        }
+      }
+    },
 
-  querySpecificSurah(surahNumber) {
-    this.loading = true;
-    axios.get(`https://api.alquran.cloud/v1/surah/`+ surahNumber)
-    .then(response => {
-      this.currentSurah = response.data.data;
-      this.loading = false;
-    })
+    querySpecificSurah(surahNumber) {
+      this.loading = true;
+      this.loadingError = false;
+      
+      // Stop any currently playing audio
+      if (this.audioPlayer) {
+        this.audioPlayer.pause();
+        this.audioPlaying = false;
+        this.audioSrc = null;
+      }
+      
+      // Primary API endpoint
+      const loadSurahFromAPI = (source, endpoint) => {
+        return axios.get(`${source}${endpoint}`);
+      };
+      
+      // Try primary source
+      loadSurahFromAPI('https://api.alquran.cloud/v1', `/surah/${surahNumber}`)
+        .then(response => {
+          this.currentSurah = response.data.data;
+          this.loading = false;
+          this.loadingError = false;
+          
+          // Load translations if showing translations
+          if (this.showTranslation) {
+            this.loadTranslations(surahNumber);
+          }
+          
+          // Scroll to top when changing surah
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        })
+        .catch(error => {
+          console.error('Error loading surah from primary source:', error);
+          
+          // Try fallback source - correct endpoint for quran.com API
+          loadSurahFromAPI('https://api.quran.com/api/v4', `/chapters/${surahNumber}`)
+            .then(response => {
+              // Normalize the data format if needed from the fallback source
+              if (response.data && response.data.chapter) {
+                this.currentSurah = this.normalizeQuranComData(response.data.chapter);
+                this.loading = false;
+                this.loadingError = false;
+                
+                // Load translations if showing translations
+                if (this.showTranslation) {
+                  this.loadTranslations(surahNumber);
+                }
+                
+                // Scroll to top when changing surah
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              } else {
+                throw new Error('Unexpected data format from fallback API');
+              }
+            })
+            .catch(secondError => {
+              console.error('Error loading surah from fallback source:', secondError);
+              
+              // Try third source
+              loadSurahFromAPI('https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1', `/editions/ara-quranacademy/${surahNumber}.json`)
+                .then(response => {
+                  if (response.data && response.data.verses) {
+                    // Create a normalized surah object from the third source
+                    const surahData = {
+                      number: surahNumber,
+                      name: `سورة ${surahNumber}`,
+                      englishName: `Surah ${surahNumber}`,
+                      englishNameTranslation: '',
+                      revelationType: '',
+                      numberOfAyahs: response.data.verses.length,
+                      ayahs: response.data.verses.map(verse => ({
+                        number: verse.id || verse.verse,
+                        text: verse.text,
+                        numberInSurah: verse.verse,
+                        juz: 0,
+                        page: 0
+                      }))
+                    };
+                    
+                    this.currentSurah = surahData;
+                    this.loading = false;
+                    this.loadingError = false;
+                    
+                    // Load translations if showing translations
+                    if (this.showTranslation) {
+                      this.loadTranslations(surahNumber);
+                    }
+                  } else {
+                    throw new Error('Unexpected data format from third API source');
+                  }
+                })
+                .catch(thirdError => {
+                  console.error('All API sources failed for surah loading:', thirdError);
+                  this.loading = false;
+                  this.loadingError = true;
+                  this.showToastMessage('Failed to load Surah. Please check your internet connection and try again later.', 'error');
+                });
+            });
+        });
+    },
+    
+    // Helper method to normalize data from different APIs
+    normalizeQuranComData(chapterData) {
+      // First, load verses separately since the chapter endpoint doesn't include them
+      const surahNumber = chapterData.id || chapterData.chapter_number;
+      
+      // Create the basic surah object without ayahs first
+      const normalizedSurah = {
+        number: surahNumber,
+        name: chapterData.name_arabic || chapterData.name,
+        englishName: chapterData.name_simple || chapterData.transliteration || '',
+        englishNameTranslation: chapterData.translated_name?.name || '',
+        revelationType: chapterData.revelation_place || 'Unknown',
+        numberOfAyahs: chapterData.verses_count || 0,
+        ayahs: [] // Will be populated separately
+      };
+      
+      // Load ayahs separately
+      this.loadAyahsForSurah(normalizedSurah);
+      
+      return normalizedSurah;
+    },
+    
+    // Load ayahs for a surah from quran.com API
+    loadAyahsForSurah(surah) {
+      axios.get(`https://api.quran.com/api/v4/quran/verses/uthmani?chapter_number=${surah.number}`)
+        .then(response => {
+          if (response.data && response.data.verses) {
+            // Parse the verses and add them to the surah
+            surah.ayahs = response.data.verses.map(verse => ({
+              number: verse.id,
+              text: verse.text_uthmani,
+              numberInSurah: verse.verse_number,
+              juz: verse.juz_number || 0,
+              page: verse.page_number || 0
+            }));
+            
+            // Force a reactive update
+            this.currentSurah = { ...this.currentSurah };
+          }
+        })
+        .catch(error => {
+          console.error('Error loading ayahs from Quran.com API:', error);
+          
+          // Try fallback source
+          this.loadAyahsFromFallback(surah);
+        });
+    },
+    
+    // Load ayahs from fallback source
+    loadAyahsFromFallback(surah) {
+      axios.get(`https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/editions/ara-quranacademy/${surah.number}.json`)
+        .then(response => {
+          if (response.data && response.data.verses) {
+            // Parse the verses and add them to the surah
+            surah.ayahs = response.data.verses.map(verse => ({
+              number: verse.id || verse.verse,
+              text: verse.text,
+              numberInSurah: verse.verse,
+              juz: 0,
+              page: 0
+            }));
+            
+            // Force a reactive update
+            this.currentSurah = { ...this.currentSurah };
+          }
+        })
+        .catch(error => {
+          console.error('Error loading ayahs from fallback source:', error);
+          this.loadingError = true;
+          this.showToastMessage('Failed to load ayahs. Please try again later.', 'error');
+        });
+    },
+    
+    playAudio() {
+      if (!this.currentSurah.number) {
+        this.showToastMessage('Please select a Surah first', 'info');
+        return;
+      }
+      
+      if (this.audioPlayer && this.audioPlaying) {
+        // Pause the audio
+        this.audioPlayer.pause();
+        this.audioPlaying = false;
+        return;
+      }
+      
+      if (this.audioSrc && this.audioPlayer) {
+        // Resume playing
+        this.audioPlayer.play();
+        this.audioPlaying = true;
+        return;
+      }
+      
+      // Load and play the audio
+      this.loadAndPlayAudio();
+    },
+    
+    loadAndPlayAudio() {
+      this.audioLoading = true;
+      
+      // Try multiple audio sources in sequence
+      this.tryNextAudioSource(0);
+    },
+    
+    tryNextAudioSource(sourceIndex) {
+      const sources = [
+        // Source 1: QuranicAudio.com
+        `https://download.quranicaudio.com/quran/${this.currentReciter}/${this.currentSurah.number.toString().padStart(3, '0')}.mp3`,
+        
+        // Source 2: Everyayah.com
+        `https://everyayah.com/data/${this.currentReciter}/${this.currentSurah.number.toString().padStart(3, '0')}.mp3`,
+        
+        // Source 3: IslamicNetwork fallback
+        `https://cdn.islamic.network/quran/audio-surah/128/${this.currentReciter}/${this.currentSurah.number}.mp3`,
+        
+        // Source 4: Alternative source for Abdul Basit specifically
+        `https://verses.quran.com/AbdulBaset/${this.currentSurah.number.toString().padStart(3, '0')}.mp3`
+      ];
+      
+      if (sourceIndex >= sources.length) {
+        // All sources failed
+        console.error('All audio sources failed');
+        this.audioLoading = false;
+        this.showToastMessage('Failed to play audio. Please try a different surah or reciter.', 'error');
+        return;
+      }
+      
+      const audioUrl = sources[sourceIndex];
+      console.log(`Trying audio source ${sourceIndex + 1}:`, audioUrl);
+      
+      // Create audio element if it doesn't exist
+      if (!this.audioPlayer) {
+        this.audioPlayer = new Audio();
+        
+        // Set up event listeners
+        this.audioPlayer.addEventListener('timeupdate', this.updateProgress);
+        this.audioPlayer.addEventListener('loadedmetadata', this.onAudioLoaded);
+        this.audioPlayer.addEventListener('ended', this.onAudioEnded);
+        this.audioPlayer.addEventListener('error', this.onAudioError);
+      }
+      
+      // Set the audio source and load it
+      this.audioSrc = audioUrl;
+      this.audioPlayer.src = audioUrl;
+      this.audioPlayer.load();
+      
+      // Create a timeout for loading to prevent hanging on slow connections
+      const loadingTimeout = setTimeout(() => {
+        if (this.audioLoading) {
+          console.log('Audio loading timed out, trying next source');
+          this.audioPlayer.pause();
+          this.tryNextAudioSource(sourceIndex + 1);
+        }
+      }, 5000); // 5 second timeout
+      
+      // Start playing once loaded
+      this.audioPlayer.play().then(() => {
+        clearTimeout(loadingTimeout);
+        this.audioPlaying = true;
+        this.audioLoading = false;
+      }).catch(error => {
+        clearTimeout(loadingTimeout);
+        console.error(`Error playing audio from source ${sourceIndex + 1}:`, error);
+        // Try next source
+        this.tryNextAudioSource(sourceIndex + 1);
+      });
+    },
+    
+    updateProgress() {
+      if (this.audioPlayer) {
+        this.currentTime = this.audioPlayer.currentTime;
+        this.duration = this.audioPlayer.duration || 0;
+        this.audioProgress = (this.currentTime / this.duration) * 100 || 0;
+      }
+    },
+    
+    onAudioLoaded() {
+      this.audioLoading = false;
+      this.duration = this.audioPlayer.duration;
+    },
+    
+    onAudioEnded() {
+      this.audioPlaying = false;
+      this.currentTime = 0;
+      this.audioProgress = 0;
+      
+      if (this.repeat) {
+        setTimeout(() => {
+          this.audioPlayer.play();
+          this.audioPlaying = true;
+        }, 1000);
+      }
+    },
+    
+    onAudioError() {
+      this.audioLoading = false;
+      this.audioPlaying = false;
+      console.error('Error loading audio');
+      
+      // Don't show alert here, as we handle errors in the play() catch
+    },
+    
+    formatTime(seconds) {
+      if (isNaN(seconds) || seconds === 0) return '0:00';
+      const minutes = Math.floor(seconds / 60);
+      const remainingSeconds = Math.floor(seconds % 60);
+      return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+    },
+    
+    seekAudio(event) {
+      if (!this.audioPlayer || !this.$refs.progressBar) return;
+      
+      const progressBar = this.$refs.progressBar.parentElement;
+      const rect = progressBar.getBoundingClientRect();
+      const position = (event.clientX - rect.left) / rect.width;
+      
+      if (position >= 0 && position <= 1) {
+        this.audioPlayer.currentTime = position * this.duration;
+      }
+    },
+    
+    seekForward() {
+      if (this.audioPlayer) {
+        this.audioPlayer.currentTime = Math.min(this.audioPlayer.currentTime + 10, this.duration);
+      }
+    },
+    
+    seekBackward() {
+      if (this.audioPlayer) {
+        this.audioPlayer.currentTime = Math.max(this.audioPlayer.currentTime - 10, 0);
+      }
+    },
+    
+    changeReciter() {
+      const wasPlaying = this.audioPlaying;
+      
+      // Stop current audio
+      if (this.audioPlayer) {
+        this.audioPlayer.pause();
+        this.audioPlaying = false;
+      }
+      
+      // If audio was playing, load and play with new reciter
+      if (wasPlaying) {
+        this.loadAndPlayAudio();
+      }
+    },
+    
+    toggleRepeat() {
+      this.repeat = !this.repeat;
+    },
+    
+    downloadSurah() {
+      // Download functionality placeholder
+      this.showToastMessage('Download feature coming soon!', 'info');
+    },
+    
+    copyAyah(text) {
+      navigator.clipboard.writeText(text)
+        .then(() => {
+          this.showToastMessage('Ayah copied to clipboard', 'success');
+        })
+        .catch(err => {
+          console.error('Failed to copy: ', err);
+          this.showToastMessage('Failed to copy text', 'error');
+        });
+    },
+    
+    showToastMessage(message, type = 'success', duration = 3000) {
+      // Clear any existing timeout
+      if (this.toastTimeout) {
+        clearTimeout(this.toastTimeout);
+      }
+      
+      // Set toast properties
+      this.toastMessage = message;
+      this.toastType = type;
+      this.showToast = true;
+      
+      // Auto hide after duration
+      this.toastTimeout = setTimeout(() => {
+        this.hideToast();
+      }, duration);
+    },
+    
+    hideToast() {
+      this.showToast = false;
+    },
+    
+    // Clean up audio player when component is destroyed
+    beforeUnmount() {
+      if (this.audioPlayer) {
+        this.audioPlayer.pause();
+        this.audioPlayer.src = '';
+        this.audioPlayer.removeEventListener('timeupdate', this.updateProgress);
+        this.audioPlayer.removeEventListener('loadedmetadata', this.onAudioLoaded);
+        this.audioPlayer.removeEventListener('ended', this.onAudioEnded);
+        this.audioPlayer.removeEventListener('error', this.onAudioError);
+        this.audioPlayer = null;
+      }
+    },
+    
+    // Retry loading the current surah when loading fails
+    retryLoading() {
+      // If we have a current surah number, retry loading it
+      if (this.currentSurah.number) {
+        this.querySpecificSurah(this.currentSurah.number);
+      } 
+      // Otherwise try loading the first surah
+      else {
+        this.querySpecificSurah(1);
+      }
+      
+      this.showToastMessage('Retrying...', 'info');
+    },
+    
+    // Load bookmarks from localStorage
+    loadBookmarks() {
+      const savedBookmarks = localStorage.getItem('bookmarkedAyahs');
+      if (savedBookmarks) {
+        try {
+          this.bookmarkedAyahs = JSON.parse(savedBookmarks);
+        } catch (e) {
+          console.error('Error loading bookmarks:', e);
+          this.bookmarkedAyahs = [];
+        }
+      }
+    },
+    
+    // Save bookmarks to localStorage
+    saveBookmarks() {
+      localStorage.setItem('bookmarkedAyahs', JSON.stringify(this.bookmarkedAyahs));
+    },
+    
+    // Check if an ayah is bookmarked
+    isBookmarked(ayah) {
+      return this.bookmarkedAyahs.some(bookmark => 
+        bookmark.surahNumber === this.currentSurah.number && 
+        bookmark.ayahNumber === ayah.numberInSurah
+      );
+    },
+    
+    // Toggle bookmark status for an ayah
+    toggleBookmark(ayah) {
+      const isCurrentlyBookmarked = this.isBookmarked(ayah);
+      
+      if (isCurrentlyBookmarked) {
+        // Remove from bookmarks
+        this.bookmarkedAyahs = this.bookmarkedAyahs.filter(bookmark => 
+          !(bookmark.surahNumber === this.currentSurah.number && 
+            bookmark.ayahNumber === ayah.numberInSurah)
+        );
+        this.showToastMessage('Bookmark removed', 'info');
+      } else {
+        // Add to bookmarks
+        this.bookmarkedAyahs.push({
+          surahNumber: this.currentSurah.number,
+          surahName: this.currentSurah.englishName,
+          ayahNumber: ayah.numberInSurah,
+          ayahText: ayah.text,
+          timestamp: new Date().toISOString()
+        });
+        this.showToastMessage('Ayah bookmarked', 'success');
+      }
+      
+      // Save bookmarks to localStorage
+      this.saveBookmarks();
+    },
+    
+    toggleBookmarksMenu() {
+      this.showBookmarksMenu = !this.showBookmarksMenu;
+      
+      // Close menu when clicking outside
+      if (this.showBookmarksMenu) {
+        setTimeout(() => {
+          document.addEventListener('click', this.closeBookmarksMenu);
+        }, 0);
+      }
+    },
+    
+    closeBookmarksMenu(e) {
+      if (!e.target.closest('.bookmarks-menu')) {
+        this.showBookmarksMenu = false;
+        document.removeEventListener('click', this.closeBookmarksMenu);
+      }
+    },
+    
+    removeBookmark(bookmark) {
+      this.bookmarkedAyahs = this.bookmarkedAyahs.filter(b => 
+        !(b.surahNumber === bookmark.surahNumber && b.ayahNumber === bookmark.ayahNumber)
+      );
+      this.saveBookmarks();
+      this.showToastMessage('Bookmark removed', 'info');
+    },
+    
+    goToBookmarkedAyah(bookmark) {
+      // Close the bookmarks menu
+      this.showBookmarksMenu = false;
+      
+      // If we're already on the right surah, just scroll to the ayah
+      if (this.currentSurah.number === bookmark.surahNumber) {
+        this.scrollToAyah(bookmark.ayahNumber);
+      } else {
+        // Otherwise, load the surah first, then scroll to the ayah
+        this.querySpecificSurah(bookmark.surahNumber);
+        
+        // Wait for the surah to load, then scroll to the ayah
+        setTimeout(() => {
+          this.scrollToAyah(bookmark.ayahNumber);
+        }, 1000);
+      }
+    },
+    
+    scrollToAyah(ayahNumber) {
+      // Find the ayah element and scroll to it
+      const ayahElement = document.querySelector(`[data-ayah-number="${ayahNumber}"]`);
+      if (ayahElement) {
+        ayahElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        // Highlight the ayah briefly
+        ayahElement.classList.add('bg-yellow-100', 'dark:bg-yellow-900');
+        setTimeout(() => {
+          ayahElement.classList.remove('bg-yellow-100', 'dark:bg-yellow-900');
+        }, 2000);
+      }
+    }
+  },
+  computed: {
+    // Add a computed property to sort bookmarks by timestamp
+    sortedBookmarks() {
+      return [...this.bookmarkedAyahs].sort((a, b) => {
+        return new Date(b.timestamp) - new Date(a.timestamp);
+      });
+    }
+  }
+};
+</script>
+
+<style>
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  html.dark {
+    @apply bg-gray-900;
   }
 }
 
-};
-</script>
+/* Add custom class for Arabic text */
+.font-arabic {
+  font-family: "Amiri", "Scheherazade New", serif;
+  line-height: 2;
+}
+</style>
