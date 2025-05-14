@@ -76,10 +76,13 @@
                 {{ audioLoading ? 'Loading...' : (audioPlaying ? 'Pause' : 'Play') }}
               </button>
               <button @click="downloadSurah" class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg v-if="isInstallable || (isIOS && !isIOSPWA)" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+                <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                 </svg>
-                Download
+                {{ isInstallable || (isIOS && !isIOSPWA) ? 'Install App' : 'Download' }}
               </button>
             </div>
           </div>
@@ -373,17 +376,14 @@ export default {
   data() {
     return {
       surahs: [],
-      currentSurah: [],
-      loading: true,
+      currentSurah: {},
+      loading: false,
       loadingError: false,
-      darkMode: false,
-      showTranslation: false,
+      darkMode: window.matchMedia('(prefers-color-scheme: dark)').matches,
+      showTranslation: true,
       translationLanguage: 'en',
-      showLanguageMenu: false,
-      translations: {
-        en: {},
-        bn: {}
-      },
+      translations: {},
+      translationLoading: {},
       translationsLoading: {
         en: {},
         bn: {}
@@ -392,17 +392,15 @@ export default {
         en: {},
         bn: {}
       },
-      // Add bookmarks array to store bookmarked ayahs
-      bookmarkedAyahs: [],
-      // Audio related variables
-      audioPlayer: null,
       audioSrc: null,
+      audioPlayer: null,
       audioPlaying: false,
       audioLoading: false,
+      audioProgress: 0,
       currentTime: 0,
       duration: 0,
-      audioProgress: 0,
-      currentReciter: 'mishaari_raashid_al_3afaasee',
+      repeat: false,
+      currentReciter: 'abdul_basit_murattal',
       reciters: [
         { name: 'Mishari Rashid al-Afasy', identifier: 'mishaari_raashid_al_3afaasee' },
         { name: 'Abdul Basit Abdul Samad', identifier: 'abdul_basit_murattal' },
@@ -410,30 +408,28 @@ export default {
         { name: 'Hani ar-Rifai', identifier: 'hani_ar_rifai' },
         { name: 'Mohamed Siddiq al-Minshawi', identifier: 'minshawi_murattal' }
       ],
-      repeat: false,
-      // Toast notification
       showToast: false,
       toastMessage: '',
       toastType: 'success',
       toastTimeout: null,
-      showBookmarksMenu: false
+      bookmarkedAyahs: [],
+      showBookmarksMenu: false,
+      deferredPrompt: null,
+      isInstallable: false,
+      isIOS: false,
+      isIOSPWA: false,
     }
   },
   mounted() {
-    // Check for saved preferences
     this.loadUserPreferences();
     
-    // Load initial data
     this.loadAllSurahs();
     this.querySpecificSurah(1);
     
-    // Add dark mode listener
     this.setupDarkModeListener();
     
-    // Load saved bookmarks from localStorage
     this.loadBookmarks();
     
-    // Add debug menu to help troubleshoot translation issues
     window.debugQuranApp = {
       showTranslations: () => {
         console.log('Current translation state:', {
@@ -454,28 +450,40 @@ export default {
         this.loadBanglaTranslation(this.currentSurah.number);
       }
     };
+    
+    this.isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    this.isIOSPWA = this.isIOS && window.navigator.standalone;
+    
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      this.deferredPrompt = e;
+      this.isInstallable = true;
+    });
+    
+    window.addEventListener('appinstalled', () => {
+      console.log('App was installed');
+      this.deferredPrompt = null;
+      this.isInstallable = false;
+      this.showToastMessage('App installed successfully!', 'success');
+    });
   },
   methods: {
     loadUserPreferences() {
-      // Load dark mode preference
       const savedDarkMode = localStorage.getItem('darkMode');
       if (savedDarkMode !== null) {
         this.darkMode = JSON.parse(savedDarkMode);
         this.applyDarkMode();
       } else {
-        // Check system preference
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         this.darkMode = prefersDark;
         this.applyDarkMode();
       }
       
-      // Load translation preference
       const savedTranslation = localStorage.getItem('showTranslation');
       if (savedTranslation !== null) {
         this.showTranslation = JSON.parse(savedTranslation);
       }
       
-      // Load language preference
       const savedLanguage = localStorage.getItem('translationLanguage');
       if (savedLanguage !== null) {
         this.translationLanguage = savedLanguage;
@@ -483,7 +491,6 @@ export default {
     },
     
     setupDarkModeListener() {
-      // Listen for system dark mode changes
       window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
         if (localStorage.getItem('darkMode') === null) {
           this.darkMode = e.matches;
@@ -517,9 +524,7 @@ export default {
         'info'
       );
       
-      // Load translations if not already loaded and if showing translations
       if (this.showTranslation && this.currentSurah.number) {
-        // Force reload translations
         if (this.translationLanguage === 'en') {
           this.loadEnglishTranslation(this.currentSurah.number);
         } else if (this.translationLanguage === 'bn') {
@@ -531,7 +536,6 @@ export default {
     toggleLanguageMenu() {
       this.showLanguageMenu = !this.showLanguageMenu;
       
-      // Close menu when clicking outside
       if (this.showLanguageMenu) {
         setTimeout(() => {
           document.addEventListener('click', this.closeLanguageMenu);
@@ -556,7 +560,6 @@ export default {
         'info'
       );
       
-      // Always reload translations when language changes
       if (this.showTranslation && this.currentSurah.number) {
         if (lang === 'en') {
           this.loadEnglishTranslation(this.currentSurah.number);
@@ -570,17 +573,14 @@ export default {
       const surahNum = this.currentSurah.number;
       const lang = this.translationLanguage;
       
-      // Make sure objects exist
       if (!this.translations[lang]) this.translations[lang] = {};
       if (!this.translationsLoading[lang]) this.translationsLoading[lang] = {};
       
-      // If we already have this translation, it's not loading
       if (this.translations[lang][surahNum] && 
           this.translations[lang][surahNum][ayah.numberInSurah]) {
         return false;
       }
       
-      // Check if this surah's translations are currently loading
       return this.translationsLoading[lang][surahNum] === true;
     },
     
@@ -589,23 +589,18 @@ export default {
       const ayahNum = ayah.numberInSurah;
       const lang = this.translationLanguage;
       
-      // Make sure objects exist
       if (!this.translations[lang]) this.translations[lang] = {};
       if (!this.translationsLoading[lang]) this.translationsLoading[lang] = {};
       
-      // If translation is available, return it
       if (this.translations[lang][surahNum] && 
           this.translations[lang][surahNum][ayahNum]) {
         return this.translations[lang][surahNum][ayahNum];
       }
       
-      // If translation is not loading, try to load it
       if (!this.translationsLoading[lang][surahNum]) {
-        // Start loading translations if not already in progress
         this.loadTranslations(surahNum);
       }
       
-      // Return a default message while loading
       return lang === 'en' 
         ? `Translation not available for Ayah ${ayahNum}` 
         : `আয়াত ${ayahNum} এর জন্য অনুবাদ উপলব্ধ নয়`;
@@ -614,18 +609,13 @@ export default {
     loadTranslations(surahNumber) {
       const lang = this.translationLanguage;
       
-      // Initialize objects if they don't exist
       if (!this.translationsLoading[lang]) this.translationsLoading[lang] = {};
       if (!this.translationRetryCount[lang]) this.translationRetryCount[lang] = {};
       if (!this.translations[lang]) this.translations[lang] = {};
       
-      // Set loading state
       this.translationsLoading[lang][surahNumber] = true;
       
-      // Initialize retry count if not exists
-      if (!this.translationRetryCount[lang][surahNumber]) {
-        this.translationRetryCount[lang][surahNumber] = 0;
-      }
+      this.translationRetryCount[lang][surahNumber] = this.translationRetryCount[lang][surahNumber] || 0;
       
       if (lang === 'en') {
         this.loadEnglishTranslation(surahNumber);
@@ -637,20 +627,16 @@ export default {
     loadEnglishTranslation(surahNumber) {
       console.log('Loading English translation for surah:', surahNumber);
       
-      // Set loading state
       this.translationsLoading.en[surahNumber] = true;
       
-      // Increment retry count
       const currentRetryCount = this.translationRetryCount.en[surahNumber] || 0;
       this.translationRetryCount.en[surahNumber] = currentRetryCount + 1;
       
-      // If we've tried too many times, use placeholder translations
       if (currentRetryCount >= 2) {
         this.createPlaceholderTranslations('en', surahNumber);
         return;
       }
       
-      // Try primary API - alquran.cloud
       axios.get(`https://api.alquran.cloud/v1/surah/${surahNumber}/en.sahih`)
         .then(response => {
           if (response.data && response.data.data && response.data.data.ayahs) {
@@ -659,7 +645,6 @@ export default {
               translationData[ayah.numberInSurah] = ayah.text;
             });
             
-            // Set translations and update loading state
             this.translations.en[surahNumber] = translationData;
             this.translationsLoading.en[surahNumber] = false;
             
@@ -671,7 +656,6 @@ export default {
         .catch(error => {
           console.error('Error loading English translation from primary source:', error);
           
-          // Try alternative API
           this.loadEnglishTranslationFallback(surahNumber);
         });
     },
@@ -679,20 +663,17 @@ export default {
     loadEnglishTranslationFallback(surahNumber) {
       console.log('Trying alternative English translation source');
       
-      // Alternative source - Quran.com API
       axios.get(`https://api.quran.com/api/v4/quran/translations/20?chapter_number=${surahNumber}`)
         .then(response => {
           const translationData = {};
           
           if (response.data && response.data.translations) {
             response.data.translations.forEach(ayah => {
-              // Quran.com API uses different indexing, verse_key is like "1:1"
               const verseParts = ayah.verse_key.split(':');
               const ayahNumber = parseInt(verseParts[1]);
               translationData[ayahNumber] = ayah.text;
             });
             
-            // Set translations and update loading state
             this.translations.en[surahNumber] = translationData;
             this.translationsLoading.en[surahNumber] = false;
             
@@ -704,7 +685,6 @@ export default {
         .catch(error => {
           console.error('Error loading English translation from fallback source:', error);
           
-          // Create placeholder translations
           this.createPlaceholderTranslations('en', surahNumber);
         });
     },
@@ -712,20 +692,16 @@ export default {
     loadBanglaTranslation(surahNumber) {
       console.log('Loading Bangla translation for surah:', surahNumber);
       
-      // Set loading state
       this.translationsLoading.bn[surahNumber] = true;
       
-      // Increment retry count
       const currentRetryCount = this.translationRetryCount.bn[surahNumber] || 0;
       this.translationRetryCount.bn[surahNumber] = currentRetryCount + 1;
       
-      // If we've tried too many times, use placeholder translations
       if (currentRetryCount >= 2) {
         this.createPlaceholderTranslations('bn', surahNumber);
         return;
       }
       
-      // Try a reliable API first
       axios.get(`https://api.alquran.cloud/v1/surah/${surahNumber}/bn.bengali`)
         .then(response => {
           if (response.data && response.data.data && response.data.data.ayahs) {
@@ -734,7 +710,6 @@ export default {
               translationData[ayah.numberInSurah] = ayah.text;
             });
             
-            // Set translations and update loading state
             this.translations.bn[surahNumber] = translationData;
             this.translationsLoading.bn[surahNumber] = false;
             
@@ -746,7 +721,6 @@ export default {
         .catch(error => {
           console.error('Error loading Bangla translation from primary source:', error);
           
-          // Try alternative source
           this.loadBanglaTranslationFallback(surahNumber);
         });
     },
@@ -754,7 +728,6 @@ export default {
     loadBanglaTranslationFallback(surahNumber) {
       console.log('Trying alternative Bangla translation source');
       
-      // Alternative source for Bengali translation
       axios.get(`https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/editions/ben-muhiuddinkhan/${surahNumber}.json`)
         .then(response => {
           const translationData = {};
@@ -764,7 +737,6 @@ export default {
               translationData[ayah.verse] = ayah.text;
             });
             
-            // Set translations and update loading state
             this.translations.bn[surahNumber] = translationData;
             this.translationsLoading.bn[surahNumber] = false;
             
@@ -776,7 +748,6 @@ export default {
         .catch(error => {
           console.error('Error loading Bangla translation from fallback source:', error);
           
-          // Create placeholder translations
           this.createPlaceholderTranslations('bn', surahNumber);
         });
     },
@@ -789,20 +760,16 @@ export default {
         ? "Translation could not be loaded. Please try again later." 
         : "অনুবাদ লোড করা যায়নি। দয়া করে পরে আবার চেষ্টা করুন।";
       
-      // Create placeholder for each ayah
       if (this.currentSurah.ayahs) {
         this.currentSurah.ayahs.forEach(ayah => {
           placeholderData[ayah.numberInSurah] = message;
         });
       }
       
-      // Set placeholder translations
       this.translations[language][surahNumber] = placeholderData;
       
-      // Mark loading as complete
       this.translationsLoading[language][surahNumber] = false;
       
-      // Show a toast message
       this.showToastMessage(
         language === 'en' 
           ? "Could not load translations. Check your internet connection." 
@@ -812,7 +779,6 @@ export default {
     },
     
     loadAllSurahs() {
-      // Try primary API
       axios.get('https://api.alquran.cloud/v1/surah')
         .then(response => {
           this.surahs = response.data.data;
@@ -820,11 +786,9 @@ export default {
         .catch(primaryError => {
           console.error('Error loading surahs from primary source:', primaryError);
           
-          // Try fallback API
           axios.get('https://api.quran.com/api/v4/chapters')
             .then(response => {
               if (response.data && response.data.chapters) {
-                // Convert the data format to match the expected format
                 this.surahs = response.data.chapters.map(chapter => ({
                   number: chapter.id,
                   name: chapter.name_arabic,
@@ -840,11 +804,9 @@ export default {
             .catch(secondaryError => {
               console.error('Error loading surahs from fallback source:', secondaryError);
               
-              // If both sources fail, try a third source (static JSON file)
               axios.get('https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/info.json')
                 .then(response => {
                   if (response.data && response.data.chapters) {
-                    // Convert the data format
                     this.surahs = Object.entries(response.data.chapters).map(([number, chapter]) => ({
                       number: parseInt(number),
                       name: chapter.arabicName || `سورة ${number}`,
@@ -870,11 +832,10 @@ export default {
       if (surahNumber) {
         this.querySpecificSurah(surahNumber);
         
-        // If audio was playing, auto-play the new surah
         if (this.audioPlaying) {
           setTimeout(() => {
             this.playAudio();
-          }, 1000); // Wait a bit for the surah data to load
+          }, 1000);
         }
       }
     },
@@ -883,51 +844,42 @@ export default {
       this.loading = true;
       this.loadingError = false;
       
-      // Stop any currently playing audio
       if (this.audioPlayer) {
         this.audioPlayer.pause();
         this.audioPlaying = false;
         this.audioSrc = null;
       }
       
-      // Primary API endpoint
       const loadSurahFromAPI = (source, endpoint) => {
         return axios.get(`${source}${endpoint}`);
       };
       
-      // Try primary source
       loadSurahFromAPI('https://api.alquran.cloud/v1', `/surah/${surahNumber}`)
         .then(response => {
           this.currentSurah = response.data.data;
           this.loading = false;
           this.loadingError = false;
           
-          // Load translations if showing translations
           if (this.showTranslation) {
             this.loadTranslations(surahNumber);
           }
           
-          // Scroll to top when changing surah
           window.scrollTo({ top: 0, behavior: 'smooth' });
         })
         .catch(error => {
           console.error('Error loading surah from primary source:', error);
           
-          // Try fallback source - correct endpoint for quran.com API
           loadSurahFromAPI('https://api.quran.com/api/v4', `/chapters/${surahNumber}`)
             .then(response => {
-              // Normalize the data format if needed from the fallback source
               if (response.data && response.data.chapter) {
                 this.currentSurah = this.normalizeQuranComData(response.data.chapter);
                 this.loading = false;
                 this.loadingError = false;
                 
-                // Load translations if showing translations
                 if (this.showTranslation) {
                   this.loadTranslations(surahNumber);
                 }
                 
-                // Scroll to top when changing surah
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               } else {
                 throw new Error('Unexpected data format from fallback API');
@@ -936,11 +888,9 @@ export default {
             .catch(secondError => {
               console.error('Error loading surah from fallback source:', secondError);
               
-              // Try third source
               loadSurahFromAPI('https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1', `/editions/ara-quranacademy/${surahNumber}.json`)
                 .then(response => {
                   if (response.data && response.data.verses) {
-                    // Create a normalized surah object from the third source
                     const surahData = {
                       number: surahNumber,
                       name: `سورة ${surahNumber}`,
@@ -961,7 +911,6 @@ export default {
                     this.loading = false;
                     this.loadingError = false;
                     
-                    // Load translations if showing translations
                     if (this.showTranslation) {
                       this.loadTranslations(surahNumber);
                     }
@@ -979,12 +928,9 @@ export default {
         });
     },
     
-    // Helper method to normalize data from different APIs
     normalizeQuranComData(chapterData) {
-      // First, load verses separately since the chapter endpoint doesn't include them
       const surahNumber = chapterData.id || chapterData.chapter_number;
       
-      // Create the basic surah object without ayahs first
       const normalizedSurah = {
         number: surahNumber,
         name: chapterData.name_arabic || chapterData.name,
@@ -992,21 +938,18 @@ export default {
         englishNameTranslation: chapterData.translated_name?.name || '',
         revelationType: chapterData.revelation_place || 'Unknown',
         numberOfAyahs: chapterData.verses_count || 0,
-        ayahs: [] // Will be populated separately
+        ayahs: []
       };
       
-      // Load ayahs separately
       this.loadAyahsForSurah(normalizedSurah);
       
       return normalizedSurah;
     },
     
-    // Load ayahs for a surah from quran.com API
     loadAyahsForSurah(surah) {
       axios.get(`https://api.quran.com/api/v4/quran/verses/uthmani?chapter_number=${surah.number}`)
         .then(response => {
           if (response.data && response.data.verses) {
-            // Parse the verses and add them to the surah
             surah.ayahs = response.data.verses.map(verse => ({
               number: verse.id,
               text: verse.text_uthmani,
@@ -1015,24 +958,20 @@ export default {
               page: verse.page_number || 0
             }));
             
-            // Force a reactive update
             this.currentSurah = { ...this.currentSurah };
           }
         })
         .catch(error => {
           console.error('Error loading ayahs from Quran.com API:', error);
           
-          // Try fallback source
           this.loadAyahsFromFallback(surah);
         });
     },
     
-    // Load ayahs from fallback source
     loadAyahsFromFallback(surah) {
       axios.get(`https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/editions/ara-quranacademy/${surah.number}.json`)
         .then(response => {
           if (response.data && response.data.verses) {
-            // Parse the verses and add them to the surah
             surah.ayahs = response.data.verses.map(verse => ({
               number: verse.id || verse.verse,
               text: verse.text,
@@ -1041,7 +980,6 @@ export default {
               page: 0
             }));
             
-            // Force a reactive update
             this.currentSurah = { ...this.currentSurah };
           }
         })
@@ -1059,47 +997,38 @@ export default {
       }
       
       if (this.audioPlayer && this.audioPlaying) {
-        // Pause the audio
         this.audioPlayer.pause();
         this.audioPlaying = false;
         return;
       }
       
       if (this.audioSrc && this.audioPlayer) {
-        // Resume playing
         this.audioPlayer.play();
         this.audioPlaying = true;
         return;
       }
       
-      // Load and play the audio
       this.loadAndPlayAudio();
     },
     
     loadAndPlayAudio() {
       this.audioLoading = true;
       
-      // Try multiple audio sources in sequence
       this.tryNextAudioSource(0);
     },
     
     tryNextAudioSource(sourceIndex) {
       const sources = [
-        // Source 1: QuranicAudio.com
         `https://download.quranicaudio.com/quran/${this.currentReciter}/${this.currentSurah.number.toString().padStart(3, '0')}.mp3`,
         
-        // Source 2: Everyayah.com
         `https://everyayah.com/data/${this.currentReciter}/${this.currentSurah.number.toString().padStart(3, '0')}.mp3`,
         
-        // Source 3: IslamicNetwork fallback
         `https://cdn.islamic.network/quran/audio-surah/128/${this.currentReciter}/${this.currentSurah.number}.mp3`,
         
-        // Source 4: Alternative source for Abdul Basit specifically
         `https://verses.quran.com/AbdulBaset/${this.currentSurah.number.toString().padStart(3, '0')}.mp3`
       ];
       
       if (sourceIndex >= sources.length) {
-        // All sources failed
         console.error('All audio sources failed');
         this.audioLoading = false;
         this.showToastMessage('Failed to play audio. Please try a different surah or reciter.', 'error');
@@ -1109,32 +1038,27 @@ export default {
       const audioUrl = sources[sourceIndex];
       console.log(`Trying audio source ${sourceIndex + 1}:`, audioUrl);
       
-      // Create audio element if it doesn't exist
       if (!this.audioPlayer) {
         this.audioPlayer = new Audio();
         
-        // Set up event listeners
         this.audioPlayer.addEventListener('timeupdate', this.updateProgress);
         this.audioPlayer.addEventListener('loadedmetadata', this.onAudioLoaded);
         this.audioPlayer.addEventListener('ended', this.onAudioEnded);
         this.audioPlayer.addEventListener('error', this.onAudioError);
       }
       
-      // Set the audio source and load it
       this.audioSrc = audioUrl;
       this.audioPlayer.src = audioUrl;
       this.audioPlayer.load();
       
-      // Create a timeout for loading to prevent hanging on slow connections
       const loadingTimeout = setTimeout(() => {
         if (this.audioLoading) {
           console.log('Audio loading timed out, trying next source');
           this.audioPlayer.pause();
           this.tryNextAudioSource(sourceIndex + 1);
         }
-      }, 5000); // 5 second timeout
+      }, 5000);
       
-      // Start playing once loaded
       this.audioPlayer.play().then(() => {
         clearTimeout(loadingTimeout);
         this.audioPlaying = true;
@@ -1142,7 +1066,6 @@ export default {
       }).catch(error => {
         clearTimeout(loadingTimeout);
         console.error(`Error playing audio from source ${sourceIndex + 1}:`, error);
-        // Try next source
         this.tryNextAudioSource(sourceIndex + 1);
       });
     },
@@ -1177,8 +1100,6 @@ export default {
       this.audioLoading = false;
       this.audioPlaying = false;
       console.error('Error loading audio');
-      
-      // Don't show alert here, as we handle errors in the play() catch
     },
     
     formatTime(seconds) {
@@ -1215,13 +1136,11 @@ export default {
     changeReciter() {
       const wasPlaying = this.audioPlaying;
       
-      // Stop current audio
       if (this.audioPlayer) {
         this.audioPlayer.pause();
         this.audioPlaying = false;
       }
       
-      // If audio was playing, load and play with new reciter
       if (wasPlaying) {
         this.loadAndPlayAudio();
       }
@@ -1232,8 +1151,31 @@ export default {
     },
     
     downloadSurah() {
-      // Download functionality placeholder
-      this.showToastMessage('Download feature coming soon!', 'info');
+      if (this.deferredPrompt) {
+        this.deferredPrompt.prompt();
+        
+        this.deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            console.log('User accepted the install prompt');
+            this.showToastMessage('Installing app...', 'success');
+          } else {
+            console.log('User dismissed the install prompt');
+            this.showToastMessage('Installation canceled', 'info');
+          }
+          this.deferredPrompt = null;
+        });
+      } 
+      else if (this.isIOS && !this.isIOSPWA) {
+        this.showIOSInstallInstructions();
+      }
+      else {
+        this.showToastMessage('App is already installed or cannot be installed on this device', 'info');
+      }
+    },
+    
+    showIOSInstallInstructions() {
+      const message = 'To install this app on iOS: tap the share icon, then "Add to Home Screen"';
+      this.showToastMessage(message, 'info', 6000);
     },
     
     copyAyah(text) {
@@ -1248,17 +1190,14 @@ export default {
     },
     
     showToastMessage(message, type = 'success', duration = 3000) {
-      // Clear any existing timeout
       if (this.toastTimeout) {
         clearTimeout(this.toastTimeout);
       }
       
-      // Set toast properties
       this.toastMessage = message;
       this.toastType = type;
       this.showToast = true;
       
-      // Auto hide after duration
       this.toastTimeout = setTimeout(() => {
         this.hideToast();
       }, duration);
@@ -1268,7 +1207,6 @@ export default {
       this.showToast = false;
     },
     
-    // Clean up audio player when component is destroyed
     beforeUnmount() {
       if (this.audioPlayer) {
         this.audioPlayer.pause();
@@ -1281,13 +1219,10 @@ export default {
       }
     },
     
-    // Retry loading the current surah when loading fails
     retryLoading() {
-      // If we have a current surah number, retry loading it
       if (this.currentSurah.number) {
         this.querySpecificSurah(this.currentSurah.number);
       } 
-      // Otherwise try loading the first surah
       else {
         this.querySpecificSurah(1);
       }
@@ -1295,7 +1230,6 @@ export default {
       this.showToastMessage('Retrying...', 'info');
     },
     
-    // Load bookmarks from localStorage
     loadBookmarks() {
       const savedBookmarks = localStorage.getItem('bookmarkedAyahs');
       if (savedBookmarks) {
@@ -1308,12 +1242,10 @@ export default {
       }
     },
     
-    // Save bookmarks to localStorage
     saveBookmarks() {
       localStorage.setItem('bookmarkedAyahs', JSON.stringify(this.bookmarkedAyahs));
     },
     
-    // Check if an ayah is bookmarked
     isBookmarked(ayah) {
       return this.bookmarkedAyahs.some(bookmark => 
         bookmark.surahNumber === this.currentSurah.number && 
@@ -1321,19 +1253,16 @@ export default {
       );
     },
     
-    // Toggle bookmark status for an ayah
     toggleBookmark(ayah) {
       const isCurrentlyBookmarked = this.isBookmarked(ayah);
       
       if (isCurrentlyBookmarked) {
-        // Remove from bookmarks
         this.bookmarkedAyahs = this.bookmarkedAyahs.filter(bookmark => 
           !(bookmark.surahNumber === this.currentSurah.number && 
             bookmark.ayahNumber === ayah.numberInSurah)
         );
         this.showToastMessage('Bookmark removed', 'info');
       } else {
-        // Add to bookmarks
         this.bookmarkedAyahs.push({
           surahNumber: this.currentSurah.number,
           surahName: this.currentSurah.englishName,
@@ -1344,14 +1273,12 @@ export default {
         this.showToastMessage('Ayah bookmarked', 'success');
       }
       
-      // Save bookmarks to localStorage
       this.saveBookmarks();
     },
     
     toggleBookmarksMenu() {
       this.showBookmarksMenu = !this.showBookmarksMenu;
       
-      // Close menu when clicking outside
       if (this.showBookmarksMenu) {
         setTimeout(() => {
           document.addEventListener('click', this.closeBookmarksMenu);
@@ -1375,17 +1302,13 @@ export default {
     },
     
     goToBookmarkedAyah(bookmark) {
-      // Close the bookmarks menu
       this.showBookmarksMenu = false;
       
-      // If we're already on the right surah, just scroll to the ayah
       if (this.currentSurah.number === bookmark.surahNumber) {
         this.scrollToAyah(bookmark.ayahNumber);
       } else {
-        // Otherwise, load the surah first, then scroll to the ayah
         this.querySpecificSurah(bookmark.surahNumber);
         
-        // Wait for the surah to load, then scroll to the ayah
         setTimeout(() => {
           this.scrollToAyah(bookmark.ayahNumber);
         }, 1000);
@@ -1393,12 +1316,10 @@ export default {
     },
     
     scrollToAyah(ayahNumber) {
-      // Find the ayah element and scroll to it
       const ayahElement = document.querySelector(`[data-ayah-number="${ayahNumber}"]`);
       if (ayahElement) {
         ayahElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
         
-        // Highlight the ayah briefly
         ayahElement.classList.add('bg-yellow-100', 'dark:bg-yellow-900');
         setTimeout(() => {
           ayahElement.classList.remove('bg-yellow-100', 'dark:bg-yellow-900');
@@ -1407,7 +1328,6 @@ export default {
     }
   },
   computed: {
-    // Add a computed property to sort bookmarks by timestamp
     sortedBookmarks() {
       return [...this.bookmarkedAyahs].sort((a, b) => {
         return new Date(b.timestamp) - new Date(a.timestamp);
@@ -1418,14 +1338,12 @@ export default {
 </script>
 
 <style>
-/* Dark mode support */
 @media (prefers-color-scheme: dark) {
   html.dark {
     @apply bg-gray-900;
   }
 }
 
-/* Add custom class for Arabic text */
 .font-arabic {
   font-family: "Amiri", "Scheherazade New", serif;
   line-height: 2;
