@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Al-Quran Styled PWA Icons</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f9ff;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        h1 {
+            color: #1d4ed8;
+            margin-bottom: 30px;
+        }
+        
+        .icons-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 40px;
+            max-width: 1200px;
+        }
+        
+        .icon-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        .icon-title {
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #2563eb;
+        }
+        
+        .icon {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .icon-bg {
+            background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+            box-shadow: 0 8px 24px rgba(37, 99, 235, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .round {
+            border-radius: 50%;
+        }
+        
+        .rounded-square-lg {
+            border-radius: 80px;
+        }
+        
+        .rounded-square-md {
+            border-radius: 40px;
+        }
+        
+        .rounded-square-sm {
+            border-radius: 12px;
+        }
+        
+        .size-512 {
+            width: 512px;
+            height: 512px;
+        }
+        
+        .size-192 {
+            width: 192px;
+            height: 192px;
+        }
+        
+        .size-64 {
+            width: 64px;
+            height: 64px;
+        }
+        
+        .logo-wrapper {
+            position: relative;
+            width: 70%;
+            height: 70%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+        }
+        
+        .logo-glow {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            filter: blur(15px);
+        }
+        
+        .logo-glow-small {
+            filter: blur(6px);
+        }
+        
+        .logo {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 4px solid white;
+            object-fit: cover;
+            position: relative;
+            z-index: 2;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .logo-small {
+            border-width: 2px;
+        }
+        
+        .instructions {
+            max-width: 800px;
+            background: white;
+            border-radius: 16px;
+            padding: 20px 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+        
+        .instructions h2 {
+            color: #2563eb;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 10px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        
+        code {
+            background-color: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        
+        .download-info {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #64748b;
+            max-width: 250px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>Al-Quran Styled PWA Icons</h1>
+    
+    <div class="icons-container">
+        <div class="icon-card">
+            <div class="icon-title">512×512 Round</div>
+            <div class="icon">
+                <div class="icon-bg round size-512">
+                    <div class="logo-wrapper">
+                        <div class="logo-glow"></div>
+                        <img src="../src/assets/al-quran.png" alt="Al-Quran Logo" class="logo">
+                    </div>
+                </div>
+            </div>
+            <div class="download-info">
+                Use for: <code>android-chrome-512x512.png</code>
+            </div>
+        </div>
+        
+        <div class="icon-card">
+            <div class="icon-title">192×192 Round</div>
+            <div class="icon">
+                <div class="icon-bg round size-192">
+                    <div class="logo-wrapper">
+                        <div class="logo-glow"></div>
+                        <img src="../src/assets/al-quran.png" alt="Al-Quran Logo" class="logo">
+                    </div>
+                </div>
+            </div>
+            <div class="download-info">
+                Use for: <code>apple-touch-icon.png</code>
+            </div>
+        </div>
+        
+        <div class="icon-card">
+            <div class="icon-title">192×192 Rounded Square</div>
+            <div class="icon">
+                <div class="icon-bg rounded-square-md size-192">
+                    <div class="logo-wrapper">
+                        <div class="logo-glow"></div>
+                        <img src="../src/assets/al-quran.png" alt="Al-Quran Logo" class="logo">
+                    </div>
+                </div>
+            </div>
+            <div class="download-info">
+                Use for: <code>android-chrome-192x192.png</code>
+            </div>
+        </div>
+        
+        <div class="icon-card">
+            <div class="icon-title">64×64 Favicon</div>
+            <div class="icon">
+                <div class="icon-bg rounded-square-sm size-64">
+                    <div class="logo-wrapper">
+                        <div class="logo-glow logo-glow-small"></div>
+                        <img src="../src/assets/al-quran.png" alt="Al-Quran Logo" class="logo logo-small">
+                    </div>
+                </div>
+            </div>
+            <div class="download-info">
+                Use for: <code>favicon.ico</code>
+            </div>
+        </div>
+    </div>
+    
+    <div class="instructions">
+        <h2>How to Use These Icons</h2>
+        <ol>
+            <li>Take a screenshot of each icon above (using your system's screenshot tool)</li>
+            <li>Crop the screenshots to match the exact dimensions of each icon</li>
+            <li>Save each cropped image with the appropriate filename as listed under each icon</li>
+            <li>Place these files in your project's <code>public</code> directory to replace the existing icon files</li>
+            <li>Alternatively, you can also right-click on each icon and use "Save Image As" if your browser supports it</li>
+        </ol>
+        <p>These styled icons match the updated header design of your Al-Quran app and provide a consistent visual identity across all platforms.</p>
+    </div>
+</body>
+</html> 
