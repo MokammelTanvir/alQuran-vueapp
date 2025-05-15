@@ -226,10 +226,10 @@
                   formatTime(duration)
                 }}</span>
               </div>
-              <div class="flex justify-center space-x-4">
+              <div class="flex justify-center space-x-6">
                 <button
                   @click="seekBackward"
-                  class="p-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
+                  class="p-2 rounded-full bg-gray-200 hover:bg-blue-100 dark:bg-gray-700 dark:hover:bg-blue-900 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -237,24 +237,18 @@
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
+                    stroke-width="2.5"
                   >
                     <path
                       stroke-linecap="round"
                       stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M12.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0019 16V8a1 1 0 00-1.6-.8l-5.333 4z"
-                    />
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M4 8v8"
+                      d="M15 19l-7-7 7-7"
                     />
                   </svg>
                 </button>
                 <button
                   @click="playAudio"
-                  class="p-2 rounded-full bg-blue-600 text-white hover:bg-blue-700"
+                  class="p-3 rounded-full bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 shadow-md transition-colors"
                 >
                   <svg
                     v-if="audioPlaying"
@@ -263,11 +257,11 @@
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
+                    stroke-width="2.5"
                   >
                     <path
                       stroke-linecap="round"
                       stroke-linejoin="round"
-                      stroke-width="2"
                       d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
                   </svg>
@@ -278,24 +272,23 @@
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
+                    stroke-width="2.5"
                   >
                     <path
                       stroke-linecap="round"
                       stroke-linejoin="round"
-                      stroke-width="2"
                       d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
                     />
                     <path
                       stroke-linecap="round"
                       stroke-linejoin="round"
-                      stroke-width="2"
                       d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
                   </svg>
                 </button>
                 <button
                   @click="seekForward"
-                  class="p-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
+                  class="p-2 rounded-full bg-gray-200 hover:bg-blue-100 dark:bg-gray-700 dark:hover:bg-blue-900 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -303,27 +296,21 @@
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
+                    stroke-width="2.5"
                   >
                     <path
                       stroke-linecap="round"
                       stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M4.318 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0011 16V8a1 1 0 00-1.6-.8L4.318 11.2z"
-                    />
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M20 8v8"
+                      d="M9 5l7 7-7 7"
                     />
                   </svg>
                 </button>
               </div>
-              <div class="flex justify-center space-x-4">
+              <div class="flex justify-center space-x-4 mt-4">
                 <select
                   @change="changeReciter"
                   v-model="currentReciter"
-                  class="text-sm text-gray-700 dark:text-gray-200 bg-transparent border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  class="text-sm text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-md px-3 py-1 focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition-colors"
                 >
                   <option
                     v-for="reciter in reciters"
@@ -335,8 +322,8 @@
                 </select>
                 <button
                   @click="toggleRepeat"
-                  class="p-1 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
-                  :class="{ 'text-blue-600 dark:text-blue-400': repeat }"
+                  class="p-2 rounded-md bg-gray-200 hover:bg-blue-100 dark:bg-gray-700 dark:hover:bg-blue-900 transition-colors"
+                  :class="{ 'text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900': repeat, 'text-gray-600 dark:text-gray-300': !repeat }"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -344,11 +331,11 @@
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
+                    stroke-width="2"
                   >
                     <path
                       stroke-linecap="round"
                       stroke-linejoin="round"
-                      stroke-width="2"
                       d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
                     />
                   </svg>

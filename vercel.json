@@ -1,0 +1,11 @@
+{
+  "name": "al-quran-vue-app",
+  "version": 2,
+  "builds": [
+    { "src": "package.json", "use": "@vercel/static-build" }
+  ],
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/.*", "dest": "/index.html" }
+  ]
+} 
