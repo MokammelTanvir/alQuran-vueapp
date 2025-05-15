@@ -6,7 +6,7 @@ const urlsToCache = [
   '/favicon.ico',
   '/manifest.json',
   '/src/style.css',
-  '/src/assets/quran-2.png'
+  '/src/assets/al-quran.png'
 ];
 
 // Install event - cache assets
